@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, jsonify
+from flask import Blueprint, render_template, request, flash, jsonify, redirect, url_for
 from flask_login import login_required, current_user
 views = Blueprint("views", __name__)
 from .models import Notes
@@ -10,15 +10,15 @@ import json
 def home():
     if request.method == "POST":
         note = request.form.get("note")
-
-        if len(note)<2:
-            flash("note is too short", category="error")
-        else:
-            new_note = Notes(user_id=current_user.id, data=note)
+        if note:
+            new_note = Notes(data=note, user_id=current_user.id)
             db.session.add(new_note)
             db.session.commit()
-            flash("note added", category="success")
-    return render_template("home.html", user= current_user)
+
+        return redirect(url_for("views.home"))  # 🔥 critical
+
+    return render_template("home.html", user=current_user)
+
 
 
 @views.route("/delete-note", methods=["POST"])
